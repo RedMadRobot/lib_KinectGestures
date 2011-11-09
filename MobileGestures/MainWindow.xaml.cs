@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Research.Kinect.Nui;
 using Coding4Fun.Kinect.Wpf;
 
@@ -47,9 +40,9 @@ namespace MobileGestures
         #endregion
         #region Thresholds
         private float GestureRadiusThresh = 0.15f; //ignore movement if beyond this threshold
-        private float GestureVertThresh = 0.2f;
-        private float GestureHorizThresh = 0.2f;
-        private float NearEnd = 0.3f;
+        private float GestureVertThresh = 0.3f;
+        private float GestureHorizThresh = 0.3f;
+        private float NearEnd = 0.4f;
         private float FarEnd = 0.8f;
         #endregion
         #region Privates
@@ -132,7 +125,7 @@ namespace MobileGestures
                         SwypeLeft(this, new ProgressEventArgs((Math.Abs(Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh));
                 }
             }
-            GestProgress = ((Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh;
+            GestProgress = ((Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh;
         }
         #endregion
 
@@ -473,8 +466,32 @@ namespace MobileGestures
             Hands.RSwypeUpComplete += new ProgressEventHandler(Hands_RSwypeUpComplete);
             Hands.RSwypeRightComplete += new ProgressEventHandler(Hands_RSwypeRightComplete);
             Hands.RSwypeLeftComplete += new ProgressEventHandler(Hands_RSwypeLeftComplete);
+            Hands.LSwypeRight += new ProgressEventHandler(Hands_LSwypeRight);
+            Hands.LSwypeLeft += new ProgressEventHandler(Hands_LSwypeLeft);
+            Hands.LSwypeUp += new ProgressEventHandler(Hands_LSwypeUp);
+            Hands.LSwypeDown += new ProgressEventHandler(Hands_LSwypeDown);
+            Hands.LSwypeDownComplete += new ProgressEventHandler(Hands_LSwypeDownComplete);
+            Hands.LSwypeUpComplete += new ProgressEventHandler(Hands_LSwypeUpComplete);
+            Hands.LSwypeRightComplete += new ProgressEventHandler(Hands_LSwypeRightComplete);
+            Hands.LSwypeLeftComplete += new ProgressEventHandler(Hands_LSwypeLeftComplete);
+            Hands.ZoomIn += new ProgressEventHandler(Hands_ZoomIn);
+            Hands.ZoomOut += new ProgressEventHandler(Hands_ZoomOut);
         }
+
         #region EventHandlers
+
+        void Hands_ZoomOut(object sender, ProgressEventArgs a)
+        {
+            image1.Height *= 0.9d;
+            image1.Width *= 0.9d;
+        }
+
+        void Hands_ZoomIn(object sender, ProgressEventArgs a)
+        {
+            image1.Height *= 1.1d;
+            image1.Width *= 1.1d;
+        }
+
         void Hands_RSwypeLeftComplete(object sender, ProgressEventArgs a)
         {
             RSwL.Value = 0.0d;
@@ -497,22 +514,62 @@ namespace MobileGestures
 
         void Hands_RSwypeDown(object sender, ProgressEventArgs a)
         {
-            RSwD.Value = a.Progress;
+            RSwD.Value = 100 * a.Progress;
         }
 
         void Hands_RSwypeUp(object sender, ProgressEventArgs a)
         {
-            RSwU.Value = a.Progress;
+            RSwU.Value = 100 * a.Progress;
         }
 
         void Hands_RSwypeLeft(object sender, ProgressEventArgs a)
         {
-            RSwL.Value = a.Progress;
+            RSwL.Value = 100 * a.Progress;
         }
 
         void Hands_RSwypeRight(object sender, ProgressEventArgs a)
         {
-            RSwR.Value = a.Progress;
+            RSwR.Value = 100 * a.Progress;
+        }
+
+        void Hands_LSwypeLeftComplete(object sender, ProgressEventArgs a)
+        {
+            LSwL.Value = 0.0d;
+        }
+
+        void Hands_LSwypeRightComplete(object sender, ProgressEventArgs a)
+        {
+            LSwR.Value = 0.0d;
+        }
+
+        void Hands_LSwypeUpComplete(object sender, ProgressEventArgs a)
+        {
+            LSwU.Value = 0.0d;
+        }
+
+        void Hands_LSwypeDownComplete(object sender, ProgressEventArgs a)
+        {
+            LSwD.Value = 0.0d;
+        }
+
+        void Hands_LSwypeDown(object sender, ProgressEventArgs a)
+        {
+            LSwD.Value = 100 * a.Progress;
+        }
+
+        void Hands_LSwypeUp(object sender, ProgressEventArgs a)
+        {
+            LSwU.Value = 100 * a.Progress;
+        }
+
+        void Hands_LSwypeLeft(object sender, ProgressEventArgs a)
+        {
+            LSwL.Value = 100 * a.Progress;
+        }
+
+        void Hands_LSwypeRight(object sender, ProgressEventArgs a)
+        {
+            LSwR.Value = 100 * a.Progress;
         }
         #endregion
 
@@ -534,11 +591,15 @@ namespace MobileGestures
             {
                 //use first Kinect 
                 nui = Runtime.Kinects[0];
-                nui.Initialize(RuntimeOptions.UseSkeletalTracking);
+                nui.Initialize(RuntimeOptions.UseSkeletalTracking | RuntimeOptions.UseColor | RuntimeOptions.UseDepthAndPlayerIndex);
 
+                nui.DepthStream.Open(ImageStreamType.Depth, 2, ImageResolution.Resolution320x240, ImageType.DepthAndPlayerIndex);
+                nui.VideoStream.Open(ImageStreamType.Video, 2, ImageResolution.Resolution640x480, ImageType.Color);
                 nui.SkeletonEngine.TransformSmooth = true;
                 nui.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(nui_SkeletonFrameReady);
-                nui.NuiCamera.ElevationAngle = 15;
+                nui.DepthFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_DepthFrameReady);
+                nui.VideoFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_VideoFrameReady);
+                nui.NuiCamera.ElevationAngle = 7;
                 var parameters = new TransformSmoothParameters
                 {
                     Smoothing = 0.3f, //0.75f,
@@ -551,6 +612,16 @@ namespace MobileGestures
             }
         }
 
+        void nui_VideoFrameReady(object sender, ImageFrameReadyEventArgs e)
+        {
+            image2.Source = e.ImageFrame.ToBitmapSource();
+        }
+
+        void nui_DepthFrameReady(object sender, ImageFrameReadyEventArgs e)
+        {
+            image3.Source = e.ImageFrame.ToBitmapSource();
+        }
+        
         void nui_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
             SkeletonFrame allSkeletons = e.SkeletonFrame;

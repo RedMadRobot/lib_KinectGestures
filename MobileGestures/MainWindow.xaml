@@ -17,18 +17,20 @@
         <my:Double x:Key="Height1">110</my:Double>
     </Window.Resources>
     <Grid Background="Black">
+        <Image Height="705" HorizontalAlignment="Center" Margin="0" Name="image1" Stretch="UniformToFill" VerticalAlignment="Center" Width="1320" Source="/MobileGestures;component/Images/fiat_500-1366x768.jpg" OpacityMask="Black" Opacity="0.5" />
         <Label Content="RSwypeRight progress" Height="42" HorizontalAlignment="Left" Margin="821,256,0,0" Name="label1" VerticalAlignment="Top" Width="256" FontSize="20" Foreground="White" />
-        <ProgressBar Height="30" Margin="821,398,229,0" Name="LSwR" VerticalAlignment="Top" HorizontalAlignment="Stretch" Value="{StaticResource LSwR}" />
+        <ProgressBar Height="40" Margin="821,398,229,0" Name="LSwR" VerticalAlignment="Top" HorizontalAlignment="Stretch" Value="{StaticResource LSwR}" />
         <Label Content="LSwypeRight progress" Height="34" HorizontalAlignment="Left" Margin="821,354,0,0" Name="label2" VerticalAlignment="Top" FontSize="20" Width="256" Foreground="White" />
-        <ProgressBar Height="30" Margin="192,302,856,0" Name="RSwL" VerticalAlignment="Top" Value="{StaticResource RSwL}" Maximum="100" Minimum="0" FlowDirection="RightToLeft" />
+        <ProgressBar Height="40" Margin="192,302,856,0" Name="RSwL" VerticalAlignment="Top" Value="{StaticResource RSwL}" Maximum="100" Minimum="0" FlowDirection="RightToLeft" />
         <Label Content="RSwypeLeft progress" FontSize="20" Height="42" HorizontalAlignment="Left" Margin="192,256,0,0" Name="label3" VerticalAlignment="Top" Width="256" Foreground="White" />
-        <ProgressBar Height="30" Margin="192,398,856,0" Name="LSwL" VerticalAlignment="Top" Value="{StaticResource LSwL}" FlowDirection="RightToLeft" />
+        <ProgressBar Height="40" Margin="192,398,856,0" Name="LSwL" VerticalAlignment="Top" Value="{StaticResource LSwL}" FlowDirection="RightToLeft" />
         <Label Content="LSwypeLeft progress" FontSize="20" Height="34" HorizontalAlignment="Left" Margin="192,354,0,0" Name="label4" VerticalAlignment="Top" Width="256" Foreground="White" />
-        <ProgressBar Height="30" HorizontalAlignment="Stretch" Margin="821,302,229,0" Name="RSwR" VerticalAlignment="Top" Maximum="100" Minimum="0" Value="{StaticResource RSwR}" />
-        <ProgressBar Height="210" Margin="681,0,633,431" Name="RSwU" VerticalAlignment="Center" Orientation="Vertical" Width="30" Value="{StaticResource RSwU}" />
-        <ProgressBar Height="210" Margin="595,0,719,431" Name="LSwU" Orientation="Vertical" VerticalAlignment="Center" Width="30" Value="{StaticResource LSwU}" />
-        <ProgressBar Height="210" Margin="681,465,0,54" Name="RSwD" Orientation="Vertical" VerticalAlignment="Center" Width="30" Value="{StaticResource RSwD}" FlowDirection="RightToLeft" HorizontalAlignment="Left" />
-        <ProgressBar Height="210" Margin="595,465,719,54" Name="LSwD" Orientation="Vertical" VerticalAlignment="Center" Width="30" Value="{StaticResource LSwD}" FlowDirection="RightToLeft" />
-        <Image Height="{StaticResource Height1}" HorizontalAlignment="Center" Margin="563,310,583,309" Name="image1" Stretch="UniformToFill" VerticalAlignment="Center" Width="{StaticResource Width1}" Source="/MobileGestures;component/Images/fiat_500-1366x768.jpg" />
+        <ProgressBar Height="40" HorizontalAlignment="Stretch" Margin="821,302,229,0" Name="RSwR" VerticalAlignment="Top" Maximum="100" Minimum="0" Value="{StaticResource RSwR}" />
+        <ProgressBar Height="210" Margin="681,0,633,431" Name="RSwU" VerticalAlignment="Center" Orientation="Vertical" Width="40" Value="{StaticResource RSwU}" />
+        <ProgressBar Height="210" Margin="595,0,719,431" Name="LSwU" Orientation="Vertical" VerticalAlignment="Center" Width="40" Value="{StaticResource LSwU}" />
+        <ProgressBar Height="210" Margin="681,465,0,54" Name="RSwD" Orientation="Vertical" VerticalAlignment="Center" Width="40" Value="{StaticResource RSwD}" FlowDirection="RightToLeft" HorizontalAlignment="Left" />
+        <ProgressBar Height="210" Margin="595,465,719,54" Name="LSwD" Orientation="Vertical" VerticalAlignment="Center" Width="40" Value="{StaticResource LSwD}" FlowDirection="RightToLeft" />
+        <Image Height="240" HorizontalAlignment="Left" Margin="1002,24,0,0" Name="image2" Stretch="Fill" VerticalAlignment="Top" Width="320" OpacityMask="Black" Opacity="0.75" />
+        <Image Height="240" HorizontalAlignment="Left" Margin="22,24,0,0" Name="image3" Stretch="Fill" VerticalAlignment="Top" Width="320" Opacity="0.75" />
     </Grid>
 </Window>
