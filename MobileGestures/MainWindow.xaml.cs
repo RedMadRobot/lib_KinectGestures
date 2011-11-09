@@ -40,6 +40,10 @@ namespace MobileGestures
         public event ProgressEventHandler SwypeLeft;
         public event ProgressEventHandler SwypeUp;
         public event ProgressEventHandler SwypeDown;
+        public event ProgressEventHandler SwypeRightComplete;
+        public event ProgressEventHandler SwypeLeftComplete;
+        public event ProgressEventHandler SwypeUpComplete;
+        public event ProgressEventHandler SwypeDownComplete;
         #endregion
         #region Thresholds
         private float GestureRadiusThresh = 0.15f; //ignore movement if beyond this threshold
@@ -70,11 +74,13 @@ namespace MobileGestures
                 {
                     ControlDisabled = true;
                     VertGest = false;
-                    //SwypeUpComplete();
+                    if (SwypeUpComplete != null)
+                        SwypeUpComplete(this, new ProgressEventArgs(1.0f));
                 }
                 else
                 {
-                    //SwypeUp((Math.Abs(Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh);
+                    if (SwypeUp != null)
+                        SwypeUp(this, new ProgressEventArgs((Math.Abs(Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh));
                 }
             }
             else
@@ -83,11 +89,13 @@ namespace MobileGestures
                 {
                     ControlDisabled = true;
                     VertGest = false;
-                    //SwypeDownComplete();
+                    if (SwypeDownComplete != null)
+                        SwypeDownComplete(this, new ProgressEventArgs(1.0f));
                 }
                 else
                 {
-                    //SwypeUp((Math.Abs(Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh);
+                    if (SwypeDown != null)
+                        SwypeDown(this, new ProgressEventArgs((Math.Abs(Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh));
                 }
             }
             GestProgress = ((Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh;
@@ -100,15 +108,13 @@ namespace MobileGestures
                 {
                     ControlDisabled = true;
                     HorizGest = false;
-                    //SwypeRightComplete();
+                    if (SwypeRightComplete != null)
+                        SwypeRightComplete(this, new ProgressEventArgs(1.0f));
                 }
                 else
                 {
                     if (SwypeRight != null)
-                    {
                         SwypeRight(this, new ProgressEventArgs((Math.Abs(Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh));
-                    }
-                    //SwypeRight((Math.Abs(Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh);
                 }
             }
             else
@@ -117,11 +123,13 @@ namespace MobileGestures
                 {
                     ControlDisabled = true;
                     HorizGest = false;
-                    //SwypeLeftComplete();
+                    if (SwypeLeftComplete != null)
+                        SwypeLeftComplete(this, new ProgressEventArgs(1.0f));
                 }
                 else
                 {
-                    //SwypeLeft((Math.Abs(Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh);
+                    if (SwypeLeft != null)
+                        SwypeLeft(this, new ProgressEventArgs((Math.Abs(Position.X - Init.X) - GestureRadiusThresh) / GestureHorizThresh));
                 }
             }
             GestProgress = ((Position.Y - Init.Y) - GestureRadiusThresh) / GestureVertThresh;
@@ -135,18 +143,17 @@ namespace MobileGestures
             {
                 if (ControlDisabled)
                     return false;
-                else
-                {
-                    if (!ActiveFlag)
-                        Init = CurrentCoords;
-                }
+                if (!ActiveFlag)
+                    Init = CurrentCoords;
+                ActiveFlag = true;
                 return true;
             }
             else
             {
+                if (!ControlDisabled && ActiveFlag)
+                    CompleteGesture();
                 ActiveFlag = false;
                 ControlDisabled = false;
-                CompleteGesture();
                 return false;
             }
         }
@@ -155,9 +162,11 @@ namespace MobileGestures
             if (GestProgress > 0.5f)
             {
                 if (HorizGest)
-                    ;//GestureCompleteRight message
+                    if (SwypeRightComplete != null)
+                        SwypeRightComplete(this, new ProgressEventArgs(1.0f));
                 if (VertGest)
-                    ;//GestureCompleteUp message
+                    if (SwypeUpComplete != null)
+                        SwypeUpComplete(this, new ProgressEventArgs(1.0f));
                 GestProgress = 0.0f;
                 HorizGest = VertGest = false;
                 return;
@@ -165,16 +174,33 @@ namespace MobileGestures
             if (GestProgress < -0.5f)
             {
                 if (HorizGest)
-                    ;//GestureCompleteLeft message
+                    if (SwypeLeftComplete != null)
+                        SwypeLeftComplete(this, new ProgressEventArgs(1.0f));
                 if (VertGest)
-                    ;//GestureCompleteDown message
+                    if (SwypeDownComplete != null)
+                        SwypeDownComplete(this, new ProgressEventArgs(1.0f));
                 GestProgress = 0.0f;
                 HorizGest = VertGest = false;
                 return;
             }
-            //GestureAborted message
+            //rewrite GestureAborted message
+            if (HorizGest)
+            {
+                if (SwypeRight != null)
+                    SwypeRight(this, new ProgressEventArgs(0.0f));
+                if (SwypeLeft != null)
+                    SwypeLeft(this, new ProgressEventArgs(0.0f));
+            }
+            if (VertGest)
+            {
+                if (SwypeUp != null)
+                    SwypeUp(this, new ProgressEventArgs(0.0f));
+                if (SwypeDown != null)
+                    SwypeDown(this, new ProgressEventArgs(0.0f));
+            }
             GestProgress = 0.0f;
             HorizGest = VertGest = false;
+
         }
         public void ProceedGesture()
         {
@@ -217,13 +243,15 @@ namespace MobileGestures
             if (Distance(Right, Left) - PinchPrevDistance > PinchProgressThresh)
             {
                 PinchPrevDistance = Distance(Right, Left);
-                //ZoomIn() message
+                if (ZoomIn != null)
+                    ZoomIn(this, null);
                 return;
             }
             if (PinchPrevDistance - Distance(Right, Left) > PinchProgressThresh)
             {
                 PinchPrevDistance = Distance(Right, Left);
-                //ZoomOut() message
+                if (ZoomOut!= null)
+                    ZoomOut(this, null);
                 return;
             }
         }
@@ -270,6 +298,14 @@ namespace MobileGestures
         public event ProgressEventHandler LSwypeLeft;
         public event ProgressEventHandler LSwypeUp;
         public event ProgressEventHandler LSwypeDown;
+        public event ProgressEventHandler RSwypeRightComplete;
+        public event ProgressEventHandler RSwypeLeftComplete;
+        public event ProgressEventHandler RSwypeUpComplete;
+        public event ProgressEventHandler RSwypeDownComplete;
+        public event ProgressEventHandler LSwypeRightComplete;
+        public event ProgressEventHandler LSwypeLeftComplete;
+        public event ProgressEventHandler LSwypeUpComplete;
+        public event ProgressEventHandler LSwypeDownComplete;
         public event ProgressEventHandler ZoomIn;
         public event ProgressEventHandler ZoomOut;
         #endregion
@@ -283,6 +319,14 @@ namespace MobileGestures
             LeftHand.SwypeLeft += new ProgressEventHandler(LeftHand_SwypeLeft);
             LeftHand.SwypeUp += new ProgressEventHandler(LeftHand_SwypeUp);
             LeftHand.SwypeDown += new ProgressEventHandler(LeftHand_SwypeDown);
+            RightHand.SwypeRightComplete += new ProgressEventHandler(RightHand_SwypeRightComplete);
+            RightHand.SwypeLeftComplete += new ProgressEventHandler(RightHand_SwypeLeftComplete);
+            RightHand.SwypeUpComplete += new ProgressEventHandler(RightHand_SwypeUpComplete);
+            RightHand.SwypeDownComplete += new ProgressEventHandler(RightHand_SwypeDownComplete);
+            LeftHand.SwypeRightComplete += new ProgressEventHandler(LeftHand_SwypeRightComplete);
+            LeftHand.SwypeLeftComplete += new ProgressEventHandler(LeftHand_SwypeLeftComplete);
+            LeftHand.SwypeUpComplete += new ProgressEventHandler(LeftHand_SwypeUpComplete);
+            LeftHand.SwypeDownComplete += new ProgressEventHandler(LeftHand_SwypeDownComplete);
         }
         #region ThrowThroughs
         void LeftHand_SwypeUp(object sender, ProgressEventArgs a)
@@ -348,6 +392,70 @@ namespace MobileGestures
                 RSwypeRight(this, a);
             }
         }
+
+        void LeftHand_SwypeUpComplete(object sender, ProgressEventArgs a)
+        {
+            if (LSwypeUpComplete != null)
+            {
+                LSwypeUpComplete(this, a);
+            }
+        }
+
+        void LeftHand_SwypeDownComplete(object sender, ProgressEventArgs a)
+        {
+            if (LSwypeDownComplete != null)
+            {
+                LSwypeDownComplete(this, a);
+            }
+        }
+
+        void RightHand_SwypeDownComplete(object sender, ProgressEventArgs a)
+        {
+            if (RSwypeDownComplete != null)
+            {
+                RSwypeDownComplete(this, a);
+            }
+        }
+
+        void RightHand_SwypeUpComplete(object sender, ProgressEventArgs a)
+        {
+            if (RSwypeUpComplete != null)
+            {
+                RSwypeUpComplete(this, a);
+            }
+        }
+
+        void LeftHand_SwypeLeftComplete(object sender, ProgressEventArgs a)
+        {
+            if (LSwypeLeftComplete != null)
+            {
+                LSwypeLeftComplete(this, a);
+            }
+        }
+
+        void LeftHand_SwypeRightComplete(object sender, ProgressEventArgs a)
+        {
+            if (LSwypeRightComplete != null)
+            {
+                LSwypeRightComplete(this, a);
+            }
+        }
+
+        void RightHand_SwypeLeftComplete(object sender, ProgressEventArgs a)
+        {
+            if (RSwypeLeftComplete != null)
+            {
+                RSwypeLeftComplete(this, a);
+            }
+        }
+
+        void RightHand_SwypeRightComplete(object sender, ProgressEventArgs a)
+        {
+            if (RSwypeRightComplete != null)
+            {
+                RSwypeRightComplete(this, a);
+            }
+        }
         #endregion
         #endregion
     }
@@ -358,12 +466,56 @@ namespace MobileGestures
         {
             InitializeComponent();
             Hands.RSwypeRight += new ProgressEventHandler(Hands_RSwypeRight);
+            Hands.RSwypeLeft += new ProgressEventHandler(Hands_RSwypeLeft);
+            Hands.RSwypeUp += new ProgressEventHandler(Hands_RSwypeUp);
+            Hands.RSwypeDown += new ProgressEventHandler(Hands_RSwypeDown);
+            Hands.RSwypeDownComplete += new ProgressEventHandler(Hands_RSwypeDownComplete);
+            Hands.RSwypeUpComplete += new ProgressEventHandler(Hands_RSwypeUpComplete);
+            Hands.RSwypeRightComplete += new ProgressEventHandler(Hands_RSwypeRightComplete);
+            Hands.RSwypeLeftComplete += new ProgressEventHandler(Hands_RSwypeLeftComplete);
+        }
+        #region EventHandlers
+        void Hands_RSwypeLeftComplete(object sender, ProgressEventArgs a)
+        {
+            RSwL.Value = 0.0d;
+        }
+
+        void Hands_RSwypeRightComplete(object sender, ProgressEventArgs a)
+        {
+            RSwR.Value = 0.0d;
+        }
+
+        void Hands_RSwypeUpComplete(object sender, ProgressEventArgs a)
+        {
+            RSwU.Value = 0.0d;
+        }
+
+        void Hands_RSwypeDownComplete(object sender, ProgressEventArgs a)
+        {
+            RSwD.Value = 0.0d;
+        }
+
+        void Hands_RSwypeDown(object sender, ProgressEventArgs a)
+        {
+            RSwD.Value = a.Progress;
+        }
+
+        void Hands_RSwypeUp(object sender, ProgressEventArgs a)
+        {
+            RSwU.Value = a.Progress;
+        }
+
+        void Hands_RSwypeLeft(object sender, ProgressEventArgs a)
+        {
+            RSwL.Value = a.Progress;
         }
 
         void Hands_RSwypeRight(object sender, ProgressEventArgs a)
         {
-            throw new NotImplementedException();
+            RSwR.Value = a.Progress;
         }
+        #endregion
+
         Runtime nui;
         HandsLogic Hands = new HandsLogic();
 
