@@ -1,7 +1,8 @@
 ﻿<Window x:Class="MobileGestures.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="768" Width="1366" Loaded="Window_Loaded" Closed="Window_Closed" xmlns:my="clr-namespace:System;assembly=mscorlib" WindowState="Maximized" WindowStyle="None" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
+        xmlns:Controls="clr-namespace:Coding4Fun.Kinect.Wpf.Controls;assembly=Coding4Fun.Kinect.Wpf"
+        Title="MainWindow" Height="768" Width="1366" Loaded="Window_Loaded" Closed="Window_Closed" xmlns:my="clr-namespace:System;assembly=mscorlib" WindowState="Normal" WindowStyle="None" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
     <Window.Resources>
         <my:Double x:Key="RSwR">0</my:Double>
         <my:Double x:Key="LSwR">0</my:Double>

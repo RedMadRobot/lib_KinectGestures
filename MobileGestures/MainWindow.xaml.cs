@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Research.Kinect.Nui;
 using Coding4Fun.Kinect.Wpf;
+using Coding4Fun.Kinect.Wpf.Controls;
+using MouseKeyboardLibrary;
 
 namespace MobileGestures
 {
@@ -25,6 +28,19 @@ namespace MobileGestures
         }
     }
     public delegate void ProgressEventHandler(object sender, ProgressEventArgs a);
+    public class PointEventArgs : EventArgs
+    {
+        public PointEventArgs(Point f)
+        {
+            msg = f;
+        }
+        private Point msg;
+        public Point Point
+        {
+            get { return msg; }
+        }
+    }
+    public delegate void PointEventHandler(object sender, PointEventArgs a);
 
     public class Hand
     {
@@ -42,8 +58,8 @@ namespace MobileGestures
         private float GestureRadiusThresh = 0.15f; //ignore movement if beyond this threshold
         private float GestureVertThresh = 0.3f;
         private float GestureHorizThresh = 0.3f;
-        private float NearEnd = 0.4f;
-        private float FarEnd = 0.8f;
+        public float NearEnd = 0.4f;
+        public float FarEnd = 0.8f;
         #endregion
         #region Privates
         private Microsoft.Research.Kinect.Nui.Vector Init; // position of the hand on entering the active zone
@@ -210,7 +226,8 @@ namespace MobileGestures
                 ProceedVertical();
         }
     }
-    public class HandsLogic
+
+    public class HandSwypes
     {
         #region Privates
         private Hand RightHand = new Hand();
@@ -219,6 +236,10 @@ namespace MobileGestures
         private bool InDoubleGesture = false;
         private bool RActive = false;
         private bool LActive = false;
+        public enum RecognitionMode { SWYPE, CURSOR, JOYSTICK }
+        private RecognitionMode Mode = RecognitionMode.SWYPE;
+
+        private Point ScreenResolution = new Point(1360.0d, 768.0d);
         private double PinchProgressThresh = 0.05d;
         private double PinchPrevDistance;
         private double Distance(Microsoft.Research.Kinect.Nui.Vector Right, Microsoft.Research.Kinect.Nui.Vector Left)
@@ -252,35 +273,65 @@ namespace MobileGestures
 
         public void Iteration(JointsCollection Joints)
         {
-            RActive = RightHand.IsActive(Joints[JointID.WristRight].Position, Joints[JointID.ShoulderCenter].Position.Z);
-            LActive = LeftHand.IsActive(Joints[JointID.WristLeft].Position, Joints[JointID.ShoulderCenter].Position.Z);
-            if (RActive && LActive)
+            #region Swype
+            if (Mode == RecognitionMode.SWYPE)
             {
-                if (InDoubleGesture)
+                RActive = RightHand.IsActive(Joints[JointID.WristRight].Position, Joints[JointID.ShoulderCenter].Position.Z);
+                LActive = LeftHand.IsActive(Joints[JointID.WristLeft].Position, Joints[JointID.ShoulderCenter].Position.Z);
+                if (RActive && LActive)
                 {
-                    ProceedDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                    if (InDoubleGesture)
+                    {
+                        ProceedDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                    }
+                    else
+                    {
+                        RightHand.CompleteGesture();
+                        LeftHand.CompleteGesture();
+                        InDoubleGesture = true;
+                        InitDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                    }
+                    return;
                 }
-                else
+                if (RActive && !LActive)
                 {
-                    RightHand.CompleteGesture();
-                    LeftHand.CompleteGesture();
-                    InDoubleGesture = true;
-                    InitDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                    RightHand.ProceedGesture();
+                    return;
                 }
-                return;
+                if (!RActive && LActive)
+                {
+                    LeftHand.ProceedGesture();
+                    return;
+                }
             }
-            if (RActive && !LActive)
+            #endregion
+            #region Cursor
+            if (Mode == RecognitionMode.CURSOR)
             {
-                RightHand.ProceedGesture();
-                return;
+                if ((RightHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristRight].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristRight].Position.Z) < RightHand.FarEnd))
+                {
+                    var scaledJoint = Joints[JointID.WristRight].ScaleTo((int)ScreenResolution.X, (int)ScreenResolution.Y, .3f, .2f);
+                    MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
+                    return;
+                }
+                if ((LeftHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristLeft].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristLeft].Position.Z) < LeftHand.FarEnd))
+                {
+                    var scaledJoint = Joints[JointID.WristLeft].ScaleTo((int)ScreenResolution.X, (int)ScreenResolution.Y, .3f, .2f);
+                    MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
+                    return;
+                }
             }
-            if (!RActive && LActive)
+            #endregion
+            #region Joystick
+            if (Mode == RecognitionMode.JOYSTICK)
             {
-                LeftHand.ProceedGesture();
-                return;
             }
+            #endregion
         }
-
+        public void ChangeMode(RecognitionMode InpMode)
+        {
+            Mode = InpMode;
+        }
         #region Events
         #region Declarations
         public event ProgressEventHandler RSwypeRight;
@@ -301,8 +352,9 @@ namespace MobileGestures
         public event ProgressEventHandler LSwypeDownComplete;
         public event ProgressEventHandler ZoomIn;
         public event ProgressEventHandler ZoomOut;
+        public event PointEventHandler MouseCoords;
         #endregion
-        public HandsLogic()
+        public HandSwypes()
         {
             RightHand.SwypeRight += new ProgressEventHandler(RightHand_SwypeRight);
             RightHand.SwypeLeft += new ProgressEventHandler(RightHand_SwypeLeft);
@@ -476,6 +528,7 @@ namespace MobileGestures
             Hands.LSwypeLeftComplete += new ProgressEventHandler(Hands_LSwypeLeftComplete);
             Hands.ZoomIn += new ProgressEventHandler(Hands_ZoomIn);
             Hands.ZoomOut += new ProgressEventHandler(Hands_ZoomOut);
+            Hands.MouseCoords += new PointEventHandler(Hands_MouseCoords);
         }
 
         #region EventHandlers
@@ -484,6 +537,10 @@ namespace MobileGestures
         {
             image1.Height *= 0.9d;
             image1.Width *= 0.9d;
+        }
+
+        void Hands_MouseCoords(object sender, PointEventArgs a)
+        {
         }
 
         void Hands_ZoomIn(object sender, ProgressEventArgs a)
@@ -499,6 +556,7 @@ namespace MobileGestures
 
         void Hands_RSwypeRightComplete(object sender, ProgressEventArgs a)
         {
+            Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
             RSwR.Value = 0.0d;
         }
 
@@ -574,7 +632,7 @@ namespace MobileGestures
         #endregion
 
         Runtime nui;
-        HandsLogic Hands = new HandsLogic();
+        HandSwypes Hands = new HandSwypes();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -628,9 +686,12 @@ namespace MobileGestures
             //get the first tracked skeleton 
             SkeletonData skeleton = (from s in allSkeletons.Skeletons
                                      where s.TrackingState == SkeletonTrackingState.Tracked
+                                     orderby s.UserIndex descending
                                      select s).FirstOrDefault();
             if (skeleton != null)
+            {
                 Hands.Iteration(skeleton.Joints);
+            }
         }
 
         private void Window_Closed(object sender, EventArgs e)

@@ -52,6 +52,9 @@
       <HintPath>..\..\KinectTestOne\KinectTestOne\Coding4Fun.Kinect\Microsoft.Expression.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Research.Kinect, Version=1.0.0.45, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="MouseKeyboardLibrary">
+      <HintPath>..\..\KinectTestOne\KinectTestOne\MouseKeyboardLibrary\bin\Debug\MouseKeyboardLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -110,6 +113,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\fiat_500-1366x768.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Hand_Basic.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
