@@ -112,10 +112,19 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\fiat_500-1366x768.jpg" />
+    <Resource Include="Images\Hand_Basic.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Hand_Basic.png" />
+    <Resource Include="Images\1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\10.jpg" />
+    <Resource Include="Images\3.jpg" />
+    <Resource Include="Images\4.jpg" />
+    <Resource Include="Images\7.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\exit.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

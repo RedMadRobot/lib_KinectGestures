@@ -12,9 +12,6 @@ using MouseKeyboardLibrary;
 
 namespace MobileGestures
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public class ProgressEventArgs : EventArgs
     {
         public ProgressEventArgs(float f)
@@ -239,7 +236,6 @@ namespace MobileGestures
         public enum RecognitionMode { SWYPE, CURSOR, JOYSTICK }
         private RecognitionMode Mode = RecognitionMode.SWYPE;
 
-        private Point ScreenResolution = new Point(1360.0d, 768.0d);
         private double PinchProgressThresh = 0.05d;
         private double PinchPrevDistance;
         private double Distance(Microsoft.Research.Kinect.Nui.Vector Right, Microsoft.Research.Kinect.Nui.Vector Left)
@@ -276,20 +272,20 @@ namespace MobileGestures
             #region Swype
             if (Mode == RecognitionMode.SWYPE)
             {
-                RActive = RightHand.IsActive(Joints[JointID.WristRight].Position, Joints[JointID.ShoulderCenter].Position.Z);
-                LActive = LeftHand.IsActive(Joints[JointID.WristLeft].Position, Joints[JointID.ShoulderCenter].Position.Z);
+                RActive = RightHand.IsActive(Joints[JointID.HandRight].Position, Joints[JointID.ShoulderCenter].Position.Z);
+                LActive = LeftHand.IsActive(Joints[JointID.HandLeft].Position, Joints[JointID.ShoulderCenter].Position.Z);
                 if (RActive && LActive)
                 {
                     if (InDoubleGesture)
                     {
-                        ProceedDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                        ProceedDoubleGesture(Joints[JointID.HandRight].Position, Joints[JointID.HandLeft].Position);
                     }
                     else
                     {
                         RightHand.CompleteGesture();
                         LeftHand.CompleteGesture();
                         InDoubleGesture = true;
-                        InitDoubleGesture(Joints[JointID.WristRight].Position, Joints[JointID.WristLeft].Position);
+                        InitDoubleGesture(Joints[JointID.HandRight].Position, Joints[JointID.HandLeft].Position);
                     }
                     return;
                 }
@@ -308,15 +304,15 @@ namespace MobileGestures
             #region Cursor
             if (Mode == RecognitionMode.CURSOR)
             {
-                if ((RightHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristRight].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristRight].Position.Z) < RightHand.FarEnd))
+                if ((RightHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z) < RightHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.WristRight].ScaleTo((int)ScreenResolution.X, (int)ScreenResolution.Y, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandRight].ScaleTo((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
-                if ((LeftHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristLeft].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.WristLeft].Position.Z) < LeftHand.FarEnd))
+                if ((LeftHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z) < LeftHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.WristLeft].ScaleTo((int)ScreenResolution.X, (int)ScreenResolution.Y, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandLeft].ScaleTo((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
@@ -535,99 +531,180 @@ namespace MobileGestures
 
         void Hands_ZoomOut(object sender, ProgressEventArgs a)
         {
-            image1.Height *= 0.9d;
-            image1.Width *= 0.9d;
+            Layout2.Width /= 1.1d;
+            Layout2.Height /= 1.1d;
+            Canvas.SetLeft(Layout2, (1920.0 - Layout2.Width) / 2.0);
+            Canvas.SetTop(Layout2, (1080.0 - Layout2.Height) / 2.0);
         }
 
         void Hands_MouseCoords(object sender, PointEventArgs a)
         {
+            Canvas.SetLeft(kinectButton, a.Point.X);
+            Canvas.SetTop(kinectButton, a.Point.Y);
+            if (a.Point.X < 80.0d && a.Point.Y < 80.0d)
+            {
+                Hands.ChangeMode(HandSwypes.RecognitionMode.SWYPE);
+                kinectButton.Visibility = Visibility.Hidden;
+                exitLogo.Visibility = Visibility.Hidden;
+            }
         }
 
         void Hands_ZoomIn(object sender, ProgressEventArgs a)
         {
-            image1.Height *= 1.1d;
-            image1.Width *= 1.1d;
+            Layout2.Width *= 1.1d;
+            Layout2.Height *= 1.1d;
+            Canvas.SetLeft(Layout2, (1920.0 - Layout2.Width) / 2.0);
+            Canvas.SetTop(Layout2, (1080.0 - Layout2.Height) / 2.0);
         }
 
         void Hands_RSwypeLeftComplete(object sender, ProgressEventArgs a)
         {
-            RSwL.Value = 0.0d;
+            ImageSource temp = Layout1.Source;
+            Layout1.Source = Layout2.Source;
+            Layout2.Source = Layout3.Source;
+            Layout3.Source = temp;
+            Canvas.SetLeft(Layout1, -Layout1.Width);
+            Canvas.SetLeft(Layout2, (1920-Layout2.Width)/2);
+            Canvas.SetLeft(Layout3, 1920);
         }
 
         void Hands_RSwypeRightComplete(object sender, ProgressEventArgs a)
         {
-            Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
-            RSwR.Value = 0.0d;
+            ImageSource temp = Layout2.Source;
+            Layout2.Source = Layout1.Source;
+            Layout1.Source = Layout3.Source;
+            Layout3.Source = temp;
+            Canvas.SetLeft(Layout1, -Layout1.Width);
+            Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
+            Canvas.SetLeft(Layout3, 1920);
         }
 
         void Hands_RSwypeUpComplete(object sender, ProgressEventArgs a)
         {
-            RSwU.Value = 0.0d;
+            ImageSource temp = Layout4.Source;
+            Layout4.Source = Layout2.Source;
+            Layout2.Source = Layout5.Source;
+            Layout5.Source = temp;
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetTop(Layout2, 259);
+            Canvas.SetTop(Layout5, 1080);
         }
 
         void Hands_RSwypeDownComplete(object sender, ProgressEventArgs a)
         {
-            RSwD.Value = 0.0d;
+            ImageSource temp = Layout5.Source;
+            Layout5.Source = Layout2.Source;
+            Layout2.Source = Layout4.Source;
+            Layout4.Source = temp;
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetTop(Layout2, 259);
+            Canvas.SetTop(Layout5, 1080);
         }
 
         void Hands_RSwypeDown(object sender, ProgressEventArgs a)
         {
-            RSwD.Value = 100 * a.Progress;
+            ResetScale(Layout2);
+            Canvas.SetTop(Layout4, -563 + (563 + 259) * a.Progress);
+            Canvas.SetTop(Layout2, 259 + (1080-259) * a.Progress);
+            Canvas.SetTop(Layout5, 1080);
         }
 
         void Hands_RSwypeUp(object sender, ProgressEventArgs a)
         {
-            RSwU.Value = 100 * a.Progress;
+            ResetScale(Layout2);
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetTop(Layout2, 259 - (563+259) * a.Progress);
+            Canvas.SetTop(Layout5, 1080 - (1080 - 259) * a.Progress);
         }
 
         void Hands_RSwypeLeft(object sender, ProgressEventArgs a)
         {
-            RSwL.Value = 100 * a.Progress;
+            ResetScale(Layout2);
+            Canvas.SetLeft(Layout1, -Layout1.Width);
+            Canvas.SetLeft(Layout2, 460 - (1000+460) * a.Progress);
+            Canvas.SetLeft(Layout3, 1920 - (1920-460) * a.Progress);
         }
 
         void Hands_RSwypeRight(object sender, ProgressEventArgs a)
         {
-            RSwR.Value = 100 * a.Progress;
+            ResetScale(Layout2);
+            Canvas.SetLeft(Layout1, -1000 +(1000+460)*a.Progress);
+            Canvas.SetLeft(Layout2, 460 + (1920-460)*a.Progress);
+            Canvas.SetLeft(Layout3, 1920);
         }
 
         void Hands_LSwypeLeftComplete(object sender, ProgressEventArgs a)
         {
-            LSwL.Value = 0.0d;
+            ImageSource temp = Layout1.Source;
+            Layout1.Source = Layout2.Source;
+            Layout2.Source = Layout3.Source;
+            Layout3.Source = temp;
+            Canvas.SetLeft(Layout1, -Layout1.Width);
+            Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
+            Canvas.SetLeft(Layout3, 1920);
+            Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
+            kinectButton.Visibility = Visibility.Visible;
+            exitLogo.Visibility = Visibility.Visible;
         }
 
         void Hands_LSwypeRightComplete(object sender, ProgressEventArgs a)
         {
-            LSwR.Value = 0.0d;
+            ImageSource temp = Layout2.Source;
+            Layout2.Source = Layout1.Source;
+            Layout1.Source = Layout3.Source;
+            Layout3.Source = temp;
+            Canvas.SetLeft(Layout1, -Layout1.Width);
+            Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
+            Canvas.SetLeft(Layout3, 1920);
         }
 
         void Hands_LSwypeUpComplete(object sender, ProgressEventArgs a)
         {
-            LSwU.Value = 0.0d;
+            ImageSource temp = Layout4.Source;
+            Layout4.Source = Layout2.Source;
+            Layout2.Source = Layout5.Source;
+            Layout5.Source = temp;
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetTop(Layout2, 259);
+            Canvas.SetTop(Layout5, 1080);
         }
 
         void Hands_LSwypeDownComplete(object sender, ProgressEventArgs a)
         {
-            LSwD.Value = 0.0d;
+            ImageSource temp = Layout5.Source;
+            Layout5.Source = Layout2.Source;
+            Layout2.Source = Layout4.Source;
+            Layout4.Source = temp;
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetTop(Layout2, 259);
+            Canvas.SetTop(Layout5, 1080); 
         }
 
         void Hands_LSwypeDown(object sender, ProgressEventArgs a)
         {
-            LSwD.Value = 100 * a.Progress;
         }
 
         void Hands_LSwypeUp(object sender, ProgressEventArgs a)
         {
-            LSwU.Value = 100 * a.Progress;
         }
 
         void Hands_LSwypeLeft(object sender, ProgressEventArgs a)
         {
-            LSwL.Value = 100 * a.Progress;
         }
 
         void Hands_LSwypeRight(object sender, ProgressEventArgs a)
         {
-            LSwR.Value = 100 * a.Progress;
+        }
+
+        void ResetScale(Image Im)
+        {
+            if (Canvas.GetLeft(Im) + Im.Width / 2.0 == 1920.0 / 2.0)
+            {
+                Im.Width = 1000;
+                Im.Height = 563;
+                Canvas.SetLeft(Im, (1920.0 - Im.Width) / 2.0);
+                Canvas.SetTop(Im, (1080.0 - Im.Height) / 2.0);
+            }
         }
         #endregion
 
@@ -637,6 +714,16 @@ namespace MobileGestures
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             SetupKinect();
+            Canvas.SetLeft(Layout1,-1000);
+            Canvas.SetTop(Layout1, 259);
+            Canvas.SetLeft(Layout2, 460);
+            Canvas.SetTop(Layout2, 259);
+            Canvas.SetLeft(Layout3, 1920);
+            Canvas.SetTop(Layout3, 259);
+            Canvas.SetLeft(Layout4, 460);
+            Canvas.SetTop(Layout4, -563);
+            Canvas.SetLeft(Layout5, 460);
+            Canvas.SetTop(Layout5, 1080);
         }
 
         private void SetupKinect()
@@ -649,14 +736,14 @@ namespace MobileGestures
             {
                 //use first Kinect 
                 nui = Runtime.Kinects[0];
-                nui.Initialize(RuntimeOptions.UseSkeletalTracking | RuntimeOptions.UseColor | RuntimeOptions.UseDepthAndPlayerIndex);
+                nui.Initialize(RuntimeOptions.UseSkeletalTracking);
 
-                nui.DepthStream.Open(ImageStreamType.Depth, 2, ImageResolution.Resolution320x240, ImageType.DepthAndPlayerIndex);
-                nui.VideoStream.Open(ImageStreamType.Video, 2, ImageResolution.Resolution640x480, ImageType.Color);
+                //nui.DepthStream.Open(ImageStreamType.Depth, 2, ImageResolution.Resolution320x240, ImageType.DepthAndPlayerIndex);
+                //nui.VideoStream.Open(ImageStreamType.Video, 2, ImageResolution.Resolution640x480, ImageType.Color);
                 nui.SkeletonEngine.TransformSmooth = true;
                 nui.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(nui_SkeletonFrameReady);
-                nui.DepthFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_DepthFrameReady);
-                nui.VideoFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_VideoFrameReady);
+                //nui.DepthFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_DepthFrameReady);
+                //nui.VideoFrameReady += new EventHandler<ImageFrameReadyEventArgs>(nui_VideoFrameReady);
                 nui.NuiCamera.ElevationAngle = 7;
                 var parameters = new TransformSmoothParameters
                 {
@@ -668,16 +755,6 @@ namespace MobileGestures
                 };
                 nui.SkeletonEngine.SmoothParameters = parameters;
             }
-        }
-
-        void nui_VideoFrameReady(object sender, ImageFrameReadyEventArgs e)
-        {
-            image2.Source = e.ImageFrame.ToBitmapSource();
-        }
-
-        void nui_DepthFrameReady(object sender, ImageFrameReadyEventArgs e)
-        {
-            image3.Source = e.ImageFrame.ToBitmapSource();
         }
         
         void nui_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
