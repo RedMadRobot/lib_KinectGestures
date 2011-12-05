@@ -17,6 +17,10 @@
 		Hands.Iteration(skeleton.Joints);
 6.	Настроиться на сообщения от экземпляра класса HandSwypes и указать нужные действия в обработчиках
 
+Метод класса ChangeMode позволяет выбрать режим распознавания жестов: SWYPE или CURSOR;
+	в первом режиме класс отправляет сообщения о распознающихся жестах из категории вверх/вниз/вправо/влево/зум/нажатие для обеих рук
+	во втором — сообщение с текущими координатами курсора MouseCoords
+
 —————— Методы класса HandSwypes ——————
 
 	void Iteration(JointsCollection Joints)
@@ -30,10 +34,13 @@
 
 —————— Сообщения от HandSwypes ——————
 
-	LSwypeRight	LSwypeRightComplete	RSwypeRight	RSwypeRightComplete
-	LSwypeLeft	LSwypeLeftComplete	RSwypeLeft	RSwypeLeftComplete
-	LSwypeUp	LSwypeUpComplete	RSwypeUp	RSwypeUpCompleteComplete
-	LSwypeDown	LSwypeDownComplete	RSwypeDown	RSwypeDownComplete
+	LSwypeRight	LSwypeRightComplete	RSwypeRight	RSwypeRightComplete			RPress
+	LSwypeLeft	LSwypeLeftComplete	RSwypeLeft	RSwypeLeftComplete			LPress
+	LSwypeUp	LSwypeUpComplete	RSwypeUp	RSwypeUpCompleteComplete	RPressComplete
+	LSwypeDown	LSwypeDownComplete	RSwypeDown	RSwypeDownComplete			LPressComplete
+	
+	void LSwypeRight(object sender, ProgressEventArgs a)
 		аргумент сообщений — прогресс текущего жеста (от 0 до 1)
+	
 	ZoomIn, ZoomOut	— аргументов не передают
 	MouseCoords(x,y) — передает координаты курсора на экране

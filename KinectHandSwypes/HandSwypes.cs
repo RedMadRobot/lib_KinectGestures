@@ -136,6 +136,10 @@ namespace KinectHandSwypes
         public event ProgressEventHandler LSwypeLeftComplete;
         public event ProgressEventHandler LSwypeUpComplete;
         public event ProgressEventHandler LSwypeDownComplete;
+        public event ProgressEventHandler RPress;
+        public event ProgressEventHandler LPress;
+        public event ProgressEventHandler RPressComplete;
+        public event ProgressEventHandler LPressComplete;
         public event ProgressEventHandler ZoomIn;
         public event ProgressEventHandler ZoomOut;
         public event PointEventHandler MouseCoords;
@@ -158,6 +162,42 @@ namespace KinectHandSwypes
             LeftHand.SwypeLeftComplete += new ProgressEventHandler(LeftHand_SwypeLeftComplete);
             LeftHand.SwypeUpComplete += new ProgressEventHandler(LeftHand_SwypeUpComplete);
             LeftHand.SwypeDownComplete += new ProgressEventHandler(LeftHand_SwypeDownComplete);
+            RightHand.Press += new ProgressEventHandler(RightHand_Press);
+            RightHand.PressComplete += new ProgressEventHandler(RightHand_PressComplete);
+            LeftHand.Press += new ProgressEventHandler(LeftHand_Press);
+            LeftHand.PressComplete += new ProgressEventHandler(LeftHand_PressComplete);
+        }
+
+        void LeftHand_PressComplete(object sender, ProgressEventArgs a)
+        {
+            if (LPressComplete != null)
+            {
+                LPressComplete(this, a);
+            }
+        }
+
+        void LeftHand_Press(object sender, ProgressEventArgs a)
+        {
+            if (LPress != null)
+            {
+                LPress(this, a);
+            }
+        }
+
+        void RightHand_PressComplete(object sender, ProgressEventArgs a)
+        {
+            if (RPressComplete != null)
+            {
+                RPressComplete(this, a);
+            }
+        }
+
+        void RightHand_Press(object sender, ProgressEventArgs a)
+        {
+            if (RPress != null)
+            {
+                RPress(this, a);
+            }
         }
         #region ThrowThroughs
         void LeftHand_SwypeUp(object sender, ProgressEventArgs a)
@@ -302,6 +342,8 @@ namespace KinectHandSwypes
         public event ProgressEventHandler SwypeLeftComplete;
         public event ProgressEventHandler SwypeUpComplete;
         public event ProgressEventHandler SwypeDownComplete;
+        public event ProgressEventHandler Press;
+        public event ProgressEventHandler PressComplete;
         #endregion
         #region Thresholds
         private float GestureRadiusThresh = 0.15f; //ignore movement if beyond this threshold
@@ -309,6 +351,7 @@ namespace KinectHandSwypes
         private float GestureHorizThresh = 0.3f;
         public float NearEnd = 0.4f;
         public float FarEnd = 0.8f;
+        private double CommitTime = 2000;
         #endregion
         #region Privates
         private Microsoft.Research.Kinect.Nui.Vector Init; // position of the hand on entering the active zone
@@ -319,6 +362,8 @@ namespace KinectHandSwypes
         private bool VertGest = false;
         private bool ActiveFlag = false;
         private bool ControlDisabled = false; //if the gesture is complete and waiting for leaving the active zone
+        private DateTime StartTime;
+        private bool Timer;
         private double Distance() //distance from Init position
         {
             return Math.Sqrt(Math.Pow(Position.X - Init.X, 2.0f) + Math.Pow(Position.Y - Init.Y, 2.0f));
@@ -417,6 +462,9 @@ namespace KinectHandSwypes
         }
         public void CompleteGesture()
         {
+            Timer = false;
+            if (Press != null)
+                Press(this, new ProgressEventArgs(0.0f));
             if (GestProgress > 0.5f)
             {
                 if (HorizGest)
@@ -463,7 +511,37 @@ namespace KinectHandSwypes
         public void ProceedGesture()
         {
             if (Distance() < GestureRadiusThresh)
+            {
+                if (!Timer)
+                {
+                    StartTime = DateTime.Now;
+                    Timer = true;
+                }
+                else
+                {
+                    TimeSpan Interval;
+                    Interval = DateTime.Now - StartTime;
+                    if (Interval.TotalMilliseconds >= CommitTime+500.0f)
+                    {
+                        ControlDisabled = true;
+                        if (PressComplete != null)
+                            PressComplete(this, new ProgressEventArgs(1.0f));
+                        CompleteGesture();
+                    }
+                    else
+                    {
+                        if (Press != null && Interval.TotalMilliseconds>=500)
+                            Press(this, new ProgressEventArgs((float)((Interval.TotalMilliseconds-500.0f) / CommitTime)));
+                    }
+                }
                 return;
+            }
+            if (Timer)
+            {
+                Timer = false;
+                if (Press != null)
+                    Press(this, new ProgressEventArgs(0.0f));
+            }
             if (!(HorizGest || VertGest))
             {
                 HorizGest = (Math.Abs(Position.X - Init.X)) > (Math.Abs(Position.Y - Init.Y));

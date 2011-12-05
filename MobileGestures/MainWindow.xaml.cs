@@ -35,6 +35,27 @@ namespace MobileGestures
             Hands.ZoomIn += new ProgressEventHandler(Hands_ZoomIn);
             Hands.ZoomOut += new ProgressEventHandler(Hands_ZoomOut);
             Hands.MouseCoords += new PointEventHandler(Hands_MouseCoords);
+            Hands.RPressComplete += new ProgressEventHandler(Hands_RPressComplete);
+            Hands.RPress += new ProgressEventHandler(Hands_RPress);
+        }
+
+        void Hands_RPress(object sender, ProgressEventArgs a)
+        {
+            if (a.Progress>0.0f)
+                Wait.Visibility = System.Windows.Visibility.Visible;
+            else
+                Wait.Visibility = System.Windows.Visibility.Hidden;
+            RotateTransform r = new RotateTransform();
+            r.Angle=360*a.Progress;
+            Wait.RenderTransform=r;
+        }
+
+        void Hands_RPressComplete(object sender, ProgressEventArgs a)
+        {
+            Wait.Visibility = System.Windows.Visibility.Hidden;
+            Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
+            kinectButton.Visibility = Visibility.Visible;
+            exitLogo.Visibility = Visibility.Visible;
         }
 
         #region EventHandlers
@@ -152,9 +173,6 @@ namespace MobileGestures
             Canvas.SetLeft(Layout1, -Layout1.Width);
             Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
             Canvas.SetLeft(Layout3, 1920);
-            Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
-            kinectButton.Visibility = Visibility.Visible;
-            exitLogo.Visibility = Visibility.Visible;
         }
 
         void Hands_LSwypeRightComplete(object sender, ProgressEventArgs a)
