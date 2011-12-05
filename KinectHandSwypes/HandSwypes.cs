@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using Microsoft.Research.Kinect.Nui;
 using Coding4Fun.Kinect.Wpf;
 
-namespace MobileGestures
+namespace KinectHandSwypes
 {
     public class HandSwypes
     {
@@ -16,6 +18,8 @@ namespace MobileGestures
         private bool LActive = false;
         public enum RecognitionMode { SWYPE, CURSOR, JOYSTICK }
         private RecognitionMode Mode = RecognitionMode.SWYPE;
+        private int ScreenWidth = (int)SystemParameters.PrimaryScreenWidth;
+        private int ScreenHeight = (int)SystemParameters.PrimaryScreenWidth;
 
         private double PinchProgressThresh = 0.05d;
         private double PinchPrevDistance;
@@ -47,7 +51,6 @@ namespace MobileGestures
             }
         }
         #endregion
-
         public void Iteration(JointsCollection Joints)
         {
             #region Swype
@@ -87,13 +90,13 @@ namespace MobileGestures
             {
                 if ((RightHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z) < RightHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.HandRight].ScaleTo((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandRight].ScaleTo(ScreenWidth, ScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
                 if ((LeftHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z) < LeftHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.HandLeft].ScaleTo((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandLeft].ScaleTo(ScreenWidth, ScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
@@ -107,6 +110,12 @@ namespace MobileGestures
         }
         public void ChangeMode(RecognitionMode InpMode)
         {
+            Mode = InpMode;
+        }
+        public void ChangeMode(RecognitionMode InpMode, int Width, int Height)
+        {
+            ScreenHeight = Height;
+            ScreenWidth = Width;
             Mode = InpMode;
         }
         #region Events
@@ -466,4 +475,31 @@ namespace MobileGestures
                 ProceedVertical();
         }
     }
+
+    public class ProgressEventArgs : EventArgs
+    {
+        public ProgressEventArgs(float f)
+        {
+            msg = f;
+        }
+        private float msg;
+        public float Progress
+        {
+            get { return msg; }
+        }
+    }
+    public delegate void ProgressEventHandler(object sender, ProgressEventArgs a);
+    public class PointEventArgs : EventArgs
+    {
+        public PointEventArgs(Point f)
+        {
+            msg = f;
+        }
+        private Point msg;
+        public Point Point
+        {
+            get { return msg; }
+        }
+    }
+    public delegate void PointEventHandler(object sender, PointEventArgs a);
 }
