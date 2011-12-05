@@ -4,40 +4,36 @@
 
 Для целей знакомства предусмотрен пример MobileGestures.sln
 
-————— I ——————
-Если нужно завести новый проект на WPF, открываем пример MobileGestures.sln и
-1.	чистим интерфейс (холст в MainWindow.xml)
-2.	чистим обработчики событий (#region EventHandlers в файле MainWindow.xaml.cs)
+—————— Использование библиотеки ——————
 
-————— II ——————
-Если хотим начать пользоваться библиотекой в текущем проекте на .NET4 нужно:
-
-1.	в References существующего проекта добавить
-		Microsoft.Research.Kinect,
-		Coding4Fun.Kinect.
-2.	в файл с реализацией, в котором будем обрабатывать события с жестами, добавить в начало директивы
-		using Microsoft.Research.Kinect.Nui;
-		using Coding4Fun.Kinect.Wpf.Controls;
-3.	добавить в проект файл HandSwypes.cs
-4.	объявить экземпляр класса HandSwypes, он будет обрабатывать данные скелета с Kinect
+1.	В References добавить
+		KinectHandSwypes.dll
+2.	Добавить директиву
+		using KinectHandSwypes
+3.	Объявить экземпляр класса HandSwypes:
 		HandSwypes Hands = new HandSwypes();
-5.	настроиться на получение сообщений о распознаваемых жестах из доступных:
+4.	Подключить Kinect к проекту, как описано в Kinect SDK Documentation, настроиться на распознавание скелетов
+5.	При получении сообщения SkeletonFrameReady от Kinect передать объект JointsCollection методу Iteration:
+		Hands.Iteration(skeleton.Joints);
+6.	Настроиться на сообщения от экземпляра класса HandSwypes и указать нужные действия в обработчиках
 
-		LSwypeRight			LSwypeRightComplete					ZoomIn				RSwypeRight			RSwypeRightComplete
-		LSwypeLeft			LSwypeLeftComplete					ZoomOut				RSwypeLeft			RSwypeLeftComplete
-		LSwypeUp			LSwypeUpCompleteComplete			MouseCoords			RSwypeUp			RSwypeUpCompleteComplete
-		LSwypeDown			LSwypeDownComplete										RSwypeDown			RSwypeDownComplete
-	
-	например
-		Hands.RSwypeRight += new ProgressEventHandler(_имя_обработчика_);
-		
-	сообщения передают прогресс текущего жеста (от 0.0 до 1.0), ZoomIn/ZoomOut не имеют аргументов, MouseCoords передает координаты курсора на экране (x,y)
-	
-6. 	настроиться на взаимодействие с Kinect:
-		i.	описать экземпляр класса Runtime:
-				Runtime nui;
-		ii.	инициализировать Kinect перед работой:
-				SetupKinect(int ElevateAngle);
-		iii.настроить обработчик сообщения SkeletonFrameReady (см. пример),
-		iv.	при закрытии программы вызвать
-				nui.Uninitialize();
+—————— Методы класса HandSwypes ——————
+
+	void Iteration(JointsCollection Joints)
+		— основной метод, с помощью которого передается информация о положении конечностей
+	void ChangeMode(RecognitionMode InpMode)
+	void ChangeMode(RecognitionMode InpMode, int ScreenWidth, int ScreenHeight)
+		— методы для смены режима распознавания жестов
+			InpMode = {SWYPE, CURSOR}
+			ScreenWidth, ScreenHeight — принудительная установка разрешения экрана (в пикселях), к которому приводить движения курсора
+										(по умолчанию берётся текущее разрешение основного монитора)
+
+—————— Сообщения от HandSwypes ——————
+
+	LSwypeRight	LSwypeRightComplete	RSwypeRight	RSwypeRightComplete
+	LSwypeLeft	LSwypeLeftComplete	RSwypeLeft	RSwypeLeftComplete
+	LSwypeUp	LSwypeUpComplete	RSwypeUp	RSwypeUpCompleteComplete
+	LSwypeDown	LSwypeDownComplete	RSwypeDown	RSwypeDownComplete
+		аргумент сообщений — прогресс текущего жеста (от 0 до 1)
+	ZoomIn, ZoomOut	— аргументов не передают
+	MouseCoords(x,y) — передает координаты курсора на экране
