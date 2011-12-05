@@ -18,8 +18,8 @@ namespace KinectHandSwypes
         private bool LActive = false;
         public enum RecognitionMode { SWYPE, CURSOR, JOYSTICK }
         private RecognitionMode Mode = RecognitionMode.SWYPE;
-        private int ScreenWidth = (int)SystemParameters.PrimaryScreenWidth;
-        private int ScreenHeight = (int)SystemParameters.PrimaryScreenWidth;
+        private int PrimaryScreenWidth = (int)SystemParameters.PrimaryScreenWidth;
+        private int PrimaryScreenHeight = (int)SystemParameters.PrimaryScreenWidth;
 
         private double PinchProgressThresh = 0.05d;
         private double PinchPrevDistance;
@@ -90,13 +90,13 @@ namespace KinectHandSwypes
             {
                 if ((RightHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandRight].Position.Z) < RightHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.HandRight].ScaleTo(ScreenWidth, ScreenHeight, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandRight].ScaleTo(PrimaryScreenWidth, PrimaryScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
                 if ((LeftHand.NearEnd < (Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z)) && ((Joints[JointID.ShoulderCenter].Position.Z - Joints[JointID.HandLeft].Position.Z) < LeftHand.FarEnd))
                 {
-                    var scaledJoint = Joints[JointID.HandLeft].ScaleTo(ScreenWidth, ScreenHeight, .3f, .2f);
+                    var scaledJoint = Joints[JointID.HandLeft].ScaleTo(PrimaryScreenWidth, PrimaryScreenHeight, .3f, .2f);
                     MouseCoords(this, new PointEventArgs(new Point(scaledJoint.Position.X, scaledJoint.Position.Y)));
                     return;
                 }
@@ -112,10 +112,10 @@ namespace KinectHandSwypes
         {
             Mode = InpMode;
         }
-        public void ChangeMode(RecognitionMode InpMode, int Width, int Height)
+        public void ChangeMode(RecognitionMode InpMode, int ScreenWidth, int ScreenHeight)
         {
-            ScreenHeight = Height;
-            ScreenWidth = Width;
+            PrimaryScreenHeight = ScreenHeight;
+            PrimaryScreenWidth = ScreenWidth;
             Mode = InpMode;
         }
         #region Events
