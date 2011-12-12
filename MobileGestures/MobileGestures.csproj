@@ -47,6 +47,9 @@
     <Reference Include="Coding4Fun.Kinect.Wpf">
       <HintPath>..\..\KinectTestOne\KinectTestOne\Coding4Fun.Kinect\Coding4Fun.Kinect.Wpf.dll</HintPath>
     </Reference>
+    <Reference Include="HoverButtonHandler">
+      <HintPath>..\HoverButtonHandler\HoverButtonHandler.dll</HintPath>
+    </Reference>
     <Reference Include="KinectHandSwypes">
       <HintPath>..\KinectHandSwypes\KinectHandSwypes.dll</HintPath>
     </Reference>
@@ -122,9 +125,6 @@
     <Resource Include="Images\3.jpg" />
     <Resource Include="Images\4.jpg" />
     <Resource Include="Images\7.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\exit.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

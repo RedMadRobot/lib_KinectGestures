@@ -5,6 +5,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Research.Kinect.Nui;
 using KinectHandSwypes;
+using HoverButtonHandler;
+using Coding4Fun.Kinect.Wpf.Controls;
+using System.Windows.Media.Animation;
 
 namespace MobileGestures
 {
@@ -12,10 +15,14 @@ namespace MobileGestures
     {
         Runtime nui;
         HandSwypes Hands = new HandSwypes();
+        ButtonHandler HHandler = new ButtonHandler();
 
         public MainWindow()
         {
             InitializeComponent();
+            HoverButton[] list = {Button1, Button2, Button3};
+            HHandler.PassButtons(list, button_progress);
+            HHandler.ButtonPress += new ButtonHandler.HoverEventHandler(HHandler_ButtonPress);
             Hands.RSwypeRight += new ProgressEventHandler(Hands_RSwypeRight);
             Hands.RSwypeLeft += new ProgressEventHandler(Hands_RSwypeLeft);
             Hands.RSwypeUp += new ProgressEventHandler(Hands_RSwypeUp);
@@ -39,15 +46,49 @@ namespace MobileGestures
             Hands.RPress += new ProgressEventHandler(Hands_RPress);
         }
 
+        #region EventHandlers
+
+        void HHandler_ButtonPress(object sender, ButtonHandler.HoverEventArgs a)
+        {
+            if (a.Button == Button3)
+            {
+                Hands.ChangeMode(HandSwypes.RecognitionMode.SWYPE);
+                kinectButton.Visibility = Visibility.Hidden;
+                Button1.Visibility = Visibility.Hidden;
+                Button2.Visibility = Visibility.Hidden;
+                Button3.Visibility = Visibility.Hidden;
+            }
+            if (a.Button == Button1)
+            {
+                ImageSource temp = Layout1.Source;
+                Layout1.Source = Layout2.Source;
+                Layout2.Source = Layout3.Source;
+                Layout3.Source = temp;
+                Canvas.SetLeft(Layout1, -Layout1.Width);
+                Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
+                Canvas.SetLeft(Layout3, 1920);
+            }
+            if (a.Button == Button2)
+            {
+                ImageSource temp = Layout2.Source;
+                Layout2.Source = Layout1.Source;
+                Layout1.Source = Layout3.Source;
+                Layout3.Source = temp;
+                Canvas.SetLeft(Layout1, -Layout1.Width);
+                Canvas.SetLeft(Layout2, (1920 - Layout2.Width) / 2);
+                Canvas.SetLeft(Layout3, 1920);
+            }
+        }
+
         void Hands_RPress(object sender, ProgressEventArgs a)
         {
-            if (a.Progress>0.0f)
+            if (a.Progress > 0.0f)
                 Wait.Visibility = System.Windows.Visibility.Visible;
             else
                 Wait.Visibility = System.Windows.Visibility.Hidden;
             RotateTransform r = new RotateTransform();
-            r.Angle=360*a.Progress;
-            Wait.RenderTransform=r;
+            r.Angle = 360 * a.Progress;
+            Wait.RenderTransform = r;
         }
 
         void Hands_RPressComplete(object sender, ProgressEventArgs a)
@@ -55,10 +96,10 @@ namespace MobileGestures
             Wait.Visibility = System.Windows.Visibility.Hidden;
             Hands.ChangeMode(HandSwypes.RecognitionMode.CURSOR);
             kinectButton.Visibility = Visibility.Visible;
-            exitLogo.Visibility = Visibility.Visible;
+            Button1.Visibility = Visibility.Visible;
+            Button2.Visibility = Visibility.Visible;
+            Button3.Visibility = Visibility.Visible;
         }
-
-        #region EventHandlers
 
         void Hands_ZoomOut(object sender, ProgressEventArgs a)
         {
@@ -72,12 +113,7 @@ namespace MobileGestures
         {
             Canvas.SetLeft(kinectButton, a.Point.X);
             Canvas.SetTop(kinectButton, a.Point.Y);
-            if (a.Point.X < 80.0d && a.Point.Y < 80.0d)
-            {
-                Hands.ChangeMode(HandSwypes.RecognitionMode.SWYPE);
-                kinectButton.Visibility = Visibility.Hidden;
-                exitLogo.Visibility = Visibility.Hidden;
-            }
+            HHandler.Iteration(a.Point);
         }
 
         void Hands_ZoomIn(object sender, ProgressEventArgs a)
@@ -228,10 +264,15 @@ namespace MobileGestures
         {
             if (Canvas.GetLeft(Im) + Im.Width / 2.0 == 1920.0 / 2.0)
             {
-                Im.Width = 1000;
-                Im.Height = 563;
-                Canvas.SetLeft(Im, (1920.0 - Im.Width) / 2.0);
-                Canvas.SetTop(Im, (1080.0 - Im.Height) / 2.0);
+                var st = new ScaleTransform(1.0, 1.0);
+                Duration duration = new Duration(new TimeSpan(0, 0, 0, 0, 500));
+                DoubleAnimation anim = new DoubleAnimation(1.0, duration);
+                st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
+                Im.RenderTransform = st;
+                //Im.Width = 1000;
+                //Im.Height = 563;
+                //Canvas.SetLeft(Im, (1920.0 - Im.Width) / 2.0);
+                //Canvas.SetTop(Im, (1080.0 - Im.Height) / 2.0);
             }
         }
         #endregion

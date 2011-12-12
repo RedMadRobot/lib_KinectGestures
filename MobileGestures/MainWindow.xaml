@@ -16,8 +16,17 @@
             <Image Canvas.Left="485" Canvas.Top="245" Height="563" Name="Layout4" Source="/MobileGestures;component/Images/4.jpg" Stretch="Fill" Width="1000" />
             <Image Canvas.Left="485" Canvas.Top="245" Height="563" Name="Layout5" Source="/MobileGestures;component/Images/7.jpg" Stretch="Fill" Width="1000" />
             <Controls:HoverButton Margin="0" Padding="0" x:Name="kinectButton" ImageSize="64" ImageSource="/Images/Hand_Basic.png" ActiveImageSource="/Images/Hand_Basic.png" TimeInterval="2000" Canvas.Left="22" Canvas.Top="421" Panel.ZIndex="1000" Visibility="Hidden" />
-            <Image Canvas.Left="0" Canvas.Top="0" Height="80" Name="exitLogo" Stretch="Fill" Width="80" Source="/MobileGestures;component/Images/exit.png" Visibility="Hidden" />
             <Image Canvas.Left="902" Canvas.Top="448" Height="150" Name="Wait" Stretch="Fill" Width="150" Source="/MobileGestures;component/Images/Wait.png" RenderTransformOrigin="0.5,0.5" Visibility="Hidden" />
+            <Controls:HoverButton Padding="0" x:Name="Button1" ImageSize="64" TimeInterval="2000" Canvas.Left="148" Canvas.Top="764" Panel.ZIndex="10" Visibility="Hidden" Height="218" Width="210" Background="#FF6451B1" RenderTransformOrigin="0,0" FontSize="100" FontStretch="Normal" FontFamily="Tahoma">
+                <TextBlock Canvas.Left="244" Canvas.Top="856" Height="132" Text="«" Width="126" TextAlignment="Center" />
+            </Controls:HoverButton>
+            <Controls:HoverButton Padding="0" x:Name="Button2" ImageSize="64" TimeInterval="2000" Canvas.Left="1586" Canvas.Top="764" Panel.ZIndex="10" Visibility="Hidden" Height="218" Width="210" Background="#FF6FB151" RenderTransformOrigin="0,0" FontSize="100" FontStretch="Normal" FontFamily="Tahoma">
+                <TextBlock Canvas.Left="244" Canvas.Top="856" Height="134" Text="»" Width="178" TextAlignment="Center" />
+            </Controls:HoverButton>
+            <Controls:HoverButton Padding="0" x:Name="Button3" ImageSize="64" TimeInterval="2000" Canvas.Left="870" Canvas.Top="906" Panel.ZIndex="10" Visibility="Hidden" Height="76" Width="210" Background="#FFB74B65" RenderTransformOrigin="0,0" FontSize="30" FontStretch="Normal" FontFamily="Tahoma">
+                <TextBlock Canvas.Left="956" Canvas.Top="936" Height="72" Text="Exit" Width="210" TextAlignment="Center" FontSize="50" FontWeight="Normal" />
+            </Controls:HoverButton>
+            <Controls:HoverButton Canvas.Left="-20" Canvas.Top="-20" Height="100" Name="button_progress" Width="100" ImageSource="/MobileGestures;component/Images/Wait.png" ActiveImageSource="/MobileGestures;component/Images/Wait.png" Panel.ZIndex="15" Visibility="Hidden" />
         </Canvas>
     </Grid>
 </Window>
